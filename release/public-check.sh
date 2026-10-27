@@ -23,9 +23,9 @@ oldnames='apk-maker|apkmaker|agent ?box|omalauncher|\bhatchly\b'
 
 scan_text() { # scan_text <what> < text
   local t; t=$(cat)
-  grep -nEi "$secrets" <<< "$t" | grep -vE 'gh\[pousr\]|github_pat_\[|sk-ant-\[|AIza\[|AKIA\[' | head -5 | sed "s|^|$1: secret? |"
-  grep -nEi "$oldnames" <<< "$t" | grep -viE 'hatchly box|"hatchly"' | head -5 | sed "s|^|$1: old name: |"
-  local w; for w in "${words[@]}"; do grep -nFi -- "$w" <<< "$t" | head -3 | sed "s|^|$1: private word: |"; done
+  grep -anEi "$secrets" <<< "$t" | grep -vE 'gh\[pousr\]|github_pat_\[|sk-ant-\[|AIza\[|AKIA\[' | head -5 | sed "s|^|$1: secret? |"
+  grep -anEi "$oldnames" <<< "$t" | grep -viE 'hatchly box|"hatchly"|oldnames=|\\\.apkmaker\\\.json' | head -5 | sed "s|^|$1: old name: |"
+  local w; for w in "${words[@]}"; do grep -anFi -- "$w" <<< "$t" | head -3 | sed "s|^|$1: private word: |"; done
 }
 
 for repo in "$engine" "$app"; do
@@ -33,7 +33,7 @@ for repo in "$engine" "$app"; do
   echo "== $name ($repo)"
   [ -d "$repo/.git" ] || { bad "not a git repository"; continue; }
   # Files and history.
-  hits=$(git -C "$repo" log -p --all --no-color --text 2>/dev/null | grep -E '^\+' | grep -v '^+++' | scan_text "history" | sort -u)
+  hits=$(git -C "$repo" log -p --all --no-color --text 2>/dev/null | grep -aE '^\+' | grep -av '^+++' | tr -d '\000' | scan_text "history" | sort -u)
   [ -z "$hits" ] && good "history: no secrets, old names or private words" || { bad "history:"; sed 's/^/      /' <<< "$hits" | head -20; }
   authors=$(git -C "$repo" log --all --format='%an <%ae>%n%cn <%ce>' | sort -u | grep -vx 'Hatchlybox <hatchlybox@localhost>')
   [ -z "$authors" ] && good "every commit is by Hatchlybox <hatchlybox@localhost>" || bad "other commit authors: $(tr '\n' ' ' <<< "$authors")"
