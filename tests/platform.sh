@@ -73,6 +73,7 @@ ok "install.sh sets a computer up"
   set +e; source "$repo/bin/hatchlybox"; set -e
   list_apps() { :; }
   mkdir -p "$CACHE/jobs/s1"; JOB=$CACHE/jobs/s1/job.json LOG=$CACHE/jobs/s1/log.txt; : > "$LOG"
+  sleep 1.1  # ps start times are whole seconds: the worker must start in a later second than this shell
   sleep 60 & pid=$!
   id=$(process_id "$pid")
   [ -n "$id" ] && [ "$id" = "$(process_id "$pid")" ] && [ "$id" != "$(process_id $$)" ] || fail "ps identity: $id"
