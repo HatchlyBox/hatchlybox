@@ -47,6 +47,12 @@ for repo in "$engine" "$app"; do
   [ -z "$(git -C "$repo" status --porcelain --untracked-files=no)" ] || bad "changes not committed yet"
 done
 [ -f "$app/app/src/main/assets/legal/PRIVACY.md" ] && [ -f "$app/app/src/main/assets/legal/THIRD-PARTY.md" ] && good "the app has its privacy policy and licences" || bad "the app's PRIVACY.md or THIRD-PARTY.md is missing"
+# gradle.properties is in git and shared by every machine: no secrets, no machine's paths, ever.
+gp=$(git -C "$app" show HEAD:gradle.properties 2>/dev/null || true)
+if [ -z "$gp" ]; then bad "the app has no gradle.properties in git: a fresh copy can't build"
+elif grep -vE '^\s*#' <<< "$gp" | grep -qiE 'password|secret|token|api.?key|storeFile|keyAlias|=\s*(/|~|[A-Za-z]:\\)'; then
+  bad "gradle.properties has a secret or a machine's path: $(grep -vE '^\s*#' <<< "$gp" | grep -iE 'password|secret|token|api.?key|storeFile|keyAlias|=\s*(/|~|[A-Za-z]:\\)' | head -2 | tr '\n' ' ')"
+else good "gradle.properties has only shared settings"; fi
 ! grep -q 'migrate_names' "$engine/install.sh" && good "the installer has no old-name migration" || bad "install.sh still moves old names (migrate_names)"
 
 # Issues and pull requests, with their comments: everything in them goes public too.
