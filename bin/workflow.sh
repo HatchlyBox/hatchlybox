@@ -243,6 +243,8 @@ carry_note() {
 }
 run_agent() {
   local agent=$1 dir=$2 prompt=$3 before after rc
+  # The folder as a plain path ("apps/../x" means x): inside the sandbox only the folder itself exists.
+  dir=$(realpath -ms "$dir")
   agent_budget || { echo 'total repair/time budget exhausted' >> "$LOG"; return 125; }
   # An AI helper that reached its usage limit earlier in this job isn't asked again: the one that carried on is.
   local tried=" "

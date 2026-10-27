@@ -209,7 +209,7 @@ has_lib() { ldconfig -p 2>/dev/null | grep -q "/$1\$" || [ -e "/usr/lib/$1" ] ||
 render_ready() {
   if mac; then command -v godot >/dev/null; return; fi
   if phone; then
-    command -v Xvfb >/dev/null && { [ -e /lib/ld-musl-aarch64.so.1 ] || [ -e /usr/lib/libXcursor.so.1 ]; } && { [ ! -e /lib/ld-musl-aarch64.so.1 ] || [ -f "$D/godot/gl/.ready" ]; }
+    command -v Xvfb >/dev/null && { [ -e /lib/ld-musl-aarch64.so.1 ] || has_lib libXcursor.so.1; } && { [ ! -e /lib/ld-musl-aarch64.so.1 ] || [ -f "$D/godot/gl/.ready" ]; }
     return
   fi
   command -v Xvfb >/dev/null && has_lib libXcursor.so.1 && has_lib libGL.so.1

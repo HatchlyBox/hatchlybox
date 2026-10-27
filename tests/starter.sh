@@ -55,5 +55,5 @@ jq -e '.status=="failed"' "$APPS/hello-world/.hatchlybox.json" >/dev/null
 printf '\n// retained edit\n' >> "$APPS/hello-world/app/src/main/java/com/hatchlybox/hello_world/MainActivity.kt"
 force_fail=0
 starter_app
-rg -q 'retained edit' "$APPS/hello-world/app/src/main/java/com/hatchlybox/hello_world/MainActivity.kt"
+grep -q 'retained edit' "$APPS/hello-world/app/src/main/java/com/hatchlybox/hello_world/MainActivity.kt"
 printf 'PASS: failed starter builds retry without replacing edits\n'
