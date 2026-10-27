@@ -170,7 +170,14 @@ for p in /opt /nix /snap /var/lib/snapd/snap /usr/lib/wsl /system /apex /vendor 
 # Name lookups where /etc/resolv.conf is a link into /run (systemd-resolved, NetworkManager, WSL).
 r=$(realpath /etc/resolv.conf 2>/dev/null || true)
 case $r in /run/*|/mnt/wsl/*) args+=(--ro-bind "$(dirname "$r")" "$(dirname "$r")") ;; esac
-for p in "$data/sdk.path" "$sdk" "$java"; do [ ! -e "$p" ] || args+=(--ro-bind "$p" "$p"); done
+# The SDK and Java where they really are, plus a link at the path the tools use when that is a link (SDKMAN's
+# "current", a CI's tool cache): mounting a link on itself fails. Inside /usr or /opt they're already there.
+for p in "$data/sdk.path" "$sdk" "$java"; do
+  [ -e "$p" ] || continue
+  r=$(realpath "$p")
+  case $r/ in /usr/*|/opt/*) ;; *) args+=(--ro-bind "$r" "$r") ;; esac
+  [ "$r" = "$p" ] || case $p/ in /usr/*|/opt/*) ;; *) args+=(--symlink "$r" "$p") ;; esac
+done
 [ ! -d "$project/.git" ] || args+=(--ro-bind "$project/.git" "$project/.git")
 for p in .hatchlybox.json .port.json; do [ ! -f "$project/$p" ] || args+=(--ro-bind "$project/$p" "$project/$p"); done
 # Isolated Gradle has its own caches, daemon registry and wrapper. The wrapper always locks and writes beside its

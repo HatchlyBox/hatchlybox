@@ -38,7 +38,9 @@ ok "device: a computer lists itself, the phone's budgets and the computers'; a p
 
 plat linux
 # A PATH without Xvfb (this phone has one), with pacman to name.
-mkdir -p "$w/bare"; for t in bash env cat sed awk jq grep uname id dirname readlink head pacman; do ln -sf "$(type -P "$t")" "$w/bare/$t"; done
+mkdir -p "$w/bare"; for t in bash env cat sed awk jq grep uname id dirname readlink head; do ln -sf "$(type -P "$t")" "$w/bare/$t"; done
+# An Arch system wherever the test runs: a pacman that does nothing.
+printf '#!/bin/sh\n' > "$w/bare/pacman"; chmod +x "$w/bare/pacman"
 rc=0; out=$(v env PATH="$w/bare" HATCHLYBOX_TEST_UID=1000 bash "$repo/visual/bin/visual" setup 2>&1) || rc=$?
 [ $rc = 1 ] && grep -q "^  sudo pacman -S --needed --noconfirm xorg-server-xvfb mesa vulkan-swrast" <<< "$out" || fail "setup without root: $rc $out"
 ok "setup on a computer: names the packages for an administrator instead of installing"

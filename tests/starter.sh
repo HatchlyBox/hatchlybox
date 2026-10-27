@@ -25,7 +25,7 @@ do_build() {
 starter_app
 test "$builds" = 1
 test ! -L "$APPS/hello-world"
-rg -q 'package __PKG__' "$repo/template/app/src/main/java/com/hatchlybox/template/MainActivity.kt"
+grep -q 'package __PKG__' "$repo/template/app/src/main/java/com/hatchlybox/template/MainActivity.kt"
 jq -e '.starter and .status=="ready" and .outcomes.install=="unverified"' "$APPS/hello-world/.hatchlybox.json" >/dev/null
 starter_app
 test "$builds" = 1
