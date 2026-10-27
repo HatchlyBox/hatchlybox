@@ -1,0 +1,7 @@
+# Security and version updates, as pull requests for a maintainer to approve.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

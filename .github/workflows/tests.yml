@@ -1,0 +1,32 @@
+# Every test in tests/, on each pull request and each push to main.
+name: Tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Tools the engine uses
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq zip unzip bubblewrap xvfb
+          # Ubuntu 24.04 blocks unprivileged user namespaces, which the sandbox (bubblewrap) needs.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Tests
+        run: |
+          failed=0
+          for t in tests/*.sh; do
+            if bash "$t" > /tmp/t.out 2>&1; then echo "ok   $t"
+            else echo "FAIL $t"; tail -20 /tmp/t.out; failed=1; fi
+          done
+          exit $failed
