@@ -20,11 +20,17 @@ gh repo edit "$repo" --visibility public --accept-visibility-change-consequences
 gh api -X PUT "repos/$repo/private-vulnerability-reporting" >/dev/null && echo "private vulnerability reporting: on"
 for b in main nightly; do
   gh api "repos/$repo/branches/$b" >/dev/null 2>&1 || continue
-  gh api -X PUT "repos/$repo/branches/$b/protection" --input - >/dev/null <<'EOF'
+  # GitHub locks the repository for a moment while it changes visibility: wait that out.
+  for try in $(seq 1 20); do
+    out=$(gh api -X PUT "repos/$repo/branches/$b/protection" --input - 2>&1 <<'EOF'
 {"required_status_checks": null, "enforce_admins": false,
  "required_pull_request_reviews": {"required_approving_review_count": 0, "dismiss_stale_reviews": true},
  "restrictions": null, "allow_force_pushes": false, "allow_deletions": false}
 EOF
+) && break
+    grep -q locked <<< "$out" && [ "$try" -lt 20 ] || { echo "$out" >&2; exit 1; }
+    sleep 15
+  done
   echo "$b: protected (pull requests only, no force-push, no deleting)"
 done
 echo "$repo is public: https://github.com/$repo"
