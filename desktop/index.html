@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hatchlybox</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" aria-label="Hatchlybox">
+    <div class="brand"><img src="icon.svg" alt="" width="32" height="32"><span>Hatchlybox</span></div>
+    <button class="tab" data-page="create" aria-current="page"><span class="ico" aria-hidden="true">✦</span>Create</button>
+    <button class="tab" data-page="library"><span class="ico" aria-hidden="true">▦</span>Library</button>
+    <button class="tab" data-page="phone"><span class="ico" aria-hidden="true">▯</span>Phone</button>
+    <button class="tab" data-page="devices"><span class="ico" aria-hidden="true">⇄</span>Devices</button>
+    <button class="tab" data-page="tasks"><span class="ico" aria-hidden="true">☰</span>Tasks</button>
+    <button class="tab" data-page="settings"><span class="ico" aria-hidden="true">⚙</span>Settings</button>
+    <div class="nav-foot" id="platform-name"></div>
+  </nav>
+
+  <main class="main">
+    <div class="banner" id="banner" hidden></div>
+
+    <section class="job" id="job" hidden aria-live="polite">
+      <div class="job-head">
+        <div class="spinner" id="job-spin" aria-hidden="true"></div>
+        <div class="job-text">
+          <div class="job-title" id="job-title"></div>
+          <div class="job-msg" id="job-msg"></div>
+        </div>
+        <div class="job-actions">
+          <button class="ghost small" id="job-log-btn">Show log</button>
+          <button class="ghost small danger" id="job-cancel">Stop</button>
+          <button class="ghost small" id="job-dismiss" hidden>Dismiss</button>
+        </div>
+      </div>
+      <pre class="log" id="job-log" hidden></pre>
+    </section>
+
+    <!-- Create -->
+    <section class="page" id="page-create">
+      <h1>What should we make?</h1>
+      <p class="lead">Describe it in your own words. Hatchlybox picks the right kind and an AI helper builds it, ready to use.</p>
+      <div class="card create">
+        <label class="sr" for="idea">Your idea</label>
+        <textarea id="idea" rows="4" placeholder="A habit tracker with streaks and a weekly chart…"></textarea>
+        <div class="kinds" id="kinds" role="radiogroup" aria-label="What to make"></div>
+        <input id="kind-other" hidden placeholder="Which system? For example: an ESP32 board, a Steam Deck, a smartwatch" aria-label="Which system">
+        <div class="route" id="route"></div>
+        <div class="create-foot">
+          <label class="inline">AI helper
+            <select id="agent"></select>
+          </label>
+          <button class="primary" id="create-btn">Create</button>
+        </div>
+        <div class="hint" id="create-hint"></div>
+      </div>
+      <h2>Recent</h2>
+      <div class="grid" id="recent"></div>
+    </section>
+
+    <!-- Library -->
+    <section class="page" id="page-library" hidden>
+      <div class="page-head">
+        <h1>Library</h1>
+        <input type="search" id="search" placeholder="Search" aria-label="Search the library">
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>
+        <p>Nothing here yet.</p>
+        <button class="primary" data-goto="create">Create something</button>
+      </div>
+    </section>
+
+    <!-- One creation -->
+    <section class="page" id="page-item" hidden>
+      <button class="ghost back" data-goto="library">← Library</button>
+      <div class="item-head">
+        <div class="avatar big" id="item-avatar"></div>
+        <div>
+          <h1 id="item-title"></h1>
+          <p class="lead" id="item-idea"></p>
+        </div>
+      </div>
+      <div class="row item-agent"><label class="inline">AI helper for this creation <select id="item-agent"></select></label></div>
+      <h2>Versions</h2>
+      <div class="versions" id="versions"></div>
+      <div class="card" id="make-card">
+        <h3>Make it for another system</h3>
+        <div class="row">
+          <select id="make-system" aria-label="System"></select>
+          <input id="make-other" hidden placeholder="Which system?" aria-label="Which system">
+          <button class="primary" id="make-btn">Make</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Change it</h3>
+        <textarea id="change-text" rows="3" placeholder="What should be different?"></textarea>
+        <div class="row">
+          <label class="inline">Version <select id="change-system"></select></label>
+          <button class="primary" id="change-btn">Change</button>
+        </div>
+      </div>
+      <div id="item-extra"></div>
+      <div class="danger-zone" id="delete-zone">
+        <button class="ghost danger" id="delete-btn">Delete the Android project</button>
+      </div>
+    </section>
+
+    <!-- Phone -->
+    <section class="page" id="page-phone" hidden>
+      <h1>Your phone</h1>
+      <p class="lead">Android versions install on your phone over wireless debugging, or you scan a code to download them.</p>
+      <div class="card">
+        <div class="status-line"><span class="dot" id="adb-dot"></span><span id="adb-state">Checking…</span>
+          <button class="ghost small" id="adb-refresh">Check again</button></div>
+      </div>
+      <div class="card">
+        <h3>Connect a phone (once)</h3>
+        <ol class="steps">
+          <li>On the phone: Settings › Developer options › <b>Wireless debugging</b> on (same Wi-Fi as this computer).</li>
+          <li>Tap <b>Pair device with pairing code</b>, and enter what it shows here.</li>
+        </ol>
+        <div class="row">
+          <input id="pair-addr" placeholder="192.168.1.20:41234" aria-label="Pairing address">
+          <input id="pair-code" placeholder="6-digit code" inputmode="numeric" aria-label="Pairing code">
+          <button class="primary" id="pair-btn">Pair</button>
+        </div>
+        <p class="hint">Then the address on the Wireless debugging screen itself (it has another port):</p>
+        <div class="row">
+          <input id="conn-addr" placeholder="192.168.1.20:37001" aria-label="Phone address">
+          <button class="primary" id="conn-btn">Connect</button>
+        </div>
+        <pre class="log" id="phone-out" hidden></pre>
+      </div>
+    </section>
+
+    <!-- Devices (sync) -->
+    <section class="page" id="page-tasks" hidden>
+      <h1>Tasks</h1>
+      <p class="lead">Everything Hatchlybox made, changed or built, newest first.</p>
+      <div class="list" id="tasks"></div>
+      <pre class="log" id="task-log" hidden></pre>
+    </section>
+
+    <section class="page" id="page-devices" hidden>
+      <h1>Your devices</h1>
+      <p class="lead">One library on your phone and computers. Pair them once; after that they stay in sync on their own.</p>
+      <div class="card pairing" id="pairing" hidden aria-live="polite">
+        <div class="status-line"><div class="spinner" id="pairing-spin" aria-hidden="true"></div><span id="pairing-text"></span>
+          <button class="ghost small" id="pairing-cancel">Cancel</button></div>
+        <div id="code-box" class="code-box" hidden>
+          <div class="code-words" id="code-words"></div>
+          <div id="code-qr" class="code-qr"></div>
+          <p class="hint">On the phone: open Hatchlybox › Library › Sync and type the code, or scan the square with the phone's camera. It works once, for 10 minutes.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Nearby</h3>
+        <p class="hint" id="near-hint">While this page is open, this computer is visible to Hatchlybox on your other devices (same Wi-Fi). Open sync there too (on a phone: Library › Sync): they show up here.</p>
+        <div id="nearby" class="list"></div>
+      </div>
+      <div class="card">
+        <h3>Paired devices</h3>
+        <div id="devices-list" class="list"></div>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <h3>Pair with a code</h3>
+          <p class="hint">Shows a code and a QR code. Scan it with the other device's camera, or type the code there.</p>
+          <button class="primary" id="sync-send">Show a code</button>
+        </div>
+        <div class="card">
+          <h3>Use a code</h3>
+          <div class="row">
+            <input id="sync-code" placeholder="7 violet orbit" aria-label="Code from the other device">
+            <button class="primary" id="sync-recv">Pair</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="page" id="page-settings" hidden>
+      <h1>Settings</h1>
+      <div class="card">
+        <h3>Ready to build</h3>
+        <div id="doctor" class="list"></div>
+        <div class="setup-status" id="setup-status" hidden aria-live="polite">
+          <div class="status-line"><div class="spinner" id="setup-spin" aria-hidden="true"></div><span id="setup-text"></span></div>
+          <progress id="setup-progress" max="1" value="0"></progress>
+          <pre class="log" id="setup-log" hidden></pre>
+        </div>
+        <div class="row wrap">
+          <button class="primary" id="setup-btn">Set up Android building</button>
+          <button class="ghost" id="godot-btn">Install Godot (games)</button>
+        </div>
+        <div class="setting"><span>Game screenshots (optional)</span><span id="renderer"></span></div>
+        <div class="hint" id="renderer-hint"></div>
+        <pre class="log" id="setup-out" hidden></pre>
+      </div>
+      <div class="card">
+        <h3>AI helpers</h3>
+        <div class="setting"><label for="set-agent">Default helper</label><select id="set-agent"></select></div>
+        <div class="setting"><label for="set-fallback">Carry on with another helper at a usage limit</label>
+          <input type="checkbox" id="set-fallback" class="switch"></div>
+        <div class="helpers" id="helpers"><p class="hint">Checking the AI helpers…</p></div>
+        <div class="setting"><label for="set-fixRounds">Repair rounds after a failed build</label><input type="number" id="set-fixRounds" min="0" max="10"></div>
+        <div class="setting"><label for="set-agentTimeout">Time limit per helper run (minutes)</label><input type="number" id="set-agentTimeout" min="10" max="120"></div>
+      </div>
+      <div class="card">
+        <h3>GitHub</h3>
+        <div id="github" class="list"><p class="hint">Checking GitHub…</p></div>
+      </div>
+      <div class="card">
+        <h3>Google Play</h3>
+        <div id="play" class="list"><p class="hint">Checking Google Play…</p></div>
+      </div>
+      <div class="card">
+        <h3>Skills</h3>
+        <p class="hint">Tested guides the AI helpers follow. Turn off one you don't want them to use.</p>
+        <div id="skills" class="list"></div>
+      </div>
+      <div class="card">
+        <h3>Backups</h3>
+        <p class="hint">Back up a creation from its page: its code, signing key and app files, locked with a passphrase you choose.</p>
+        <div class="row wrap">
+          <button class="ghost" id="backups-folder">Show the backups folder</button>
+          <label class="ghost file-pick">Restore a backup…<input type="file" id="restore-file" accept=".enc" hidden></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Safety</h3>
+        <div class="setting"><span>AI helpers and builds</span><span id="isolation"></span></div>
+        <div class="setting"><label for="set-isolation">Only run them in a sandbox</label><input type="checkbox" id="set-isolation" class="switch"></div>
+        <p class="hint" id="isolation-hint"></p>
+      </div>
+      <div class="card">
+        <h3>About</h3>
+        <div class="setting"><span>Version</span><span id="about-version"></span></div>
+        <div class="setting"><span>Platform</span><span id="about-platform"></span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="ask-dialog">
+  <form method="dialog" id="ask-form">
+    <h3 id="ask-title"></h3>
+    <p id="ask-text"></p>
+    <div id="ask-fields"></div>
+    <div class="row ask-buttons">
+      <button class="ghost" value="cancel" id="ask-cancel">Cancel</button>
+      <button class="primary" value="ok" id="ask-ok">OK</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="qr-dialog">
+  <h3 id="qr-title">Scan with your phone</h3>
+  <div id="qr"></div>
+  <p class="hint">Same Wi-Fi as this computer. Or open: <a id="qr-link" href="#" target="_blank" rel="noopener"></a></p>
+  <form method="dialog"><button class="primary">Done</button></form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
