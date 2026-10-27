@@ -78,6 +78,8 @@ echo 'console.log(1)' > "$e/js/app.js"
 out=$(run "web_check '$e'")
 grep -q "loads style.css" <<< "$out" && grep -q "loads img/a.png" <<< "$out" && ! grep -q "app.js\|x.y\|#top" <<< "$out" || fail "missing files: $out"
 touch "$e/style.css"; mkdir -p "$e/img"; touch "$e/img/a.png"
+grep -q "export/icon.png is missing" <<< "$(run "web_check '$e'")" || fail "no icon: $(run "web_check '$e'")"
+touch "$e/icon.png"
 [ -z "$(run "web_check '$e'")" ] || fail "a good export: $(run "web_check '$e'")"
 if PATH="$HOME/.local/share/mise/shims:$PATH" command -v node >/dev/null 2>&1; then
   echo 'function (' > "$e/js/bad.js"; printf 'import x from "./a.js";\nexport const y = 1;\n' > "$e/js/mod.js"

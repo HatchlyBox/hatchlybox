@@ -16,6 +16,7 @@ echo '{"target":"linux","agent":"codex","created":45,"changed":50,"content":50}'
 echo '{"target":"web","agent":"codex","created":46,"changed":47,"content":30}' > "$w/ports/timer/web/.port.json"
 echo '{"target":"windows","agent":"claude","created":60,"idea":"a tiny paint app","label":"Tiny Paint"}' > "$w/ports/tiny-paint/windows/.port.json"
 echo 'not json' > "$w/ports/broken/linux/.port.json"
+touch "$w/ports/timer/web/export/icon.png"
 mkdir -p "$w/cache"; echo '{"kind":"port","slug":"tiny-paint","arg":"windows","phase":"agent"}' > "$w/cache/job.json"
 j=$(HATCHLYBOX_HOME=$w/data HATCHLYBOX_CACHE=$w/cache HATCHLYBOX_APPS=$w/apps HATCHLYBOX_PORTS=$w/ports "$repo/bin/hatchlybox" creations)
 c() { jq -c --arg s "$1" '.[] | select(.slug == $s)' <<< "$j"; }
@@ -23,6 +24,9 @@ c() { jq -c --arg s "$1" '.[] | select(.slug == $s)' <<< "$j"; }
 [ "$(c notes | jq -c '.systems | keys')" = '["android"]' ] && [ "$(c notes | jq -r .systems.android.state)" = installed ] \
   && [ "$(c notes | jq -r .systems.android.here)" = true ] || fail "android only: $(c notes)"
 ok "an Android app is one creation, installable here"
+[ "$(c timer | jq -r .icon)" = "$w/ports/timer/web/export/icon.png" ] && [ "$(c tiny-paint | jq -r .icon)" = null ] \
+  || fail "the web version's icon when there's no Android one: $(c timer | jq -c .icon), $(c tiny-paint | jq -c .icon)"
+ok "a creation without an Android icon shows its web version's icon"
 [ "$(c timer | jq -c '.systems | keys')" = '["android","linux","web"]' ] && [ "$(c timer | jq -r .systems.linux.word)" = "ready to export" ] \
   && [ "$(c timer | jq -r .systems.linux.here)" = false ] && [ "$(c timer | jq -r .systems.web.here)" = true ] \
   && [ "$(c timer | jq -r .systems.web.word)" = "ready to open" ] || fail "three systems: $(c timer)"
